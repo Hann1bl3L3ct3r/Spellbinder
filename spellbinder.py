@@ -25,6 +25,12 @@ def run(cmd, check=True, allow_fail=False):
             raise subprocess.CalledProcessError(result.returncode, cmd, result.stdout, result.stderr)
     return result
 
+def prevent_service_persistence():
+    print("[+] Disabling services to prevent auto-restart on boot...")
+    run(["systemctl", "disable", "--now", "radvd"], allow_fail=True)
+    run(["systemctl", "disable", "--now", "dnsmasq"], allow_fail=True)
+    run(["systemctl", "disable", "--now", "tayga.service"], allow_fail=True)
+
 def prompt_inputs():
     interface = input("Enter the interface to listen on (default eth0): ") or "eth0"
     routable_ip = input("Enter the global IPv6 address to assign (e.g., 2001:db8:1::2): ") or "2001:db8:1::2"
@@ -154,7 +160,7 @@ def stop_dnsmasq():
 
 def log_dns_queries():
     print("[+] Starting DNS query logger...")
-    timeout = 5  # seconds
+    timeout = 5
     waited = 0
     while not os.path.exists(DNS_LOG_PATH):
         time.sleep(0.5)
@@ -191,6 +197,9 @@ def cleanup(signum=None, frame=None):
     print("\n[!] Caught exit signal. Cleaning up...")
     stop_dnsmasq()
     clear_iptables()
+    print("[+] Stopping radvd and tayga services...")
+    run(["systemctl", "stop", "radvd"], allow_fail=True)
+    run(["pkill", "tayga"], allow_fail=True)
     if os.path.exists(DNS_LOG_PATH):
         os.remove(DNS_LOG_PATH)
         print("[+] Removed temp DNS log.")
@@ -199,6 +208,7 @@ def cleanup(signum=None, frame=None):
 
 def main():
     print("[+] Initializing hardened IPv6 MITM infrastructure")
+    prevent_service_persistence()
     dinterface, dip6, tayga6ip, tayga_ip4, dns_mode = prompt_inputs()
     signal.signal(signal.SIGINT, cleanup)
     sanitize_dnsmasq_conf()
