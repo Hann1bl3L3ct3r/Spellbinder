@@ -4,6 +4,8 @@ Spellbinder is a Python-based adversary-in-the-middle (AiTM) tool that emulates 
 
 This tool supports both **DNS spoofing** (to redirect all requests to the attacker's IPv6) and **DNS relaying** (to upstream resolvers such as `8.8.8.8`), and includes real-time console logging of DNS queries for visibility.
 
+Notes: the NAT64 IP needs to be a valid IP on the IPv4 subnet when set. The IPs also are not removed on script execution, but this generally is only an issue for the NAT64 interface or if you manually change the IPv6 address consistently. These IPs can be removed manually with the "ip" command. Also, the services for tayga and radvd stay enabled post script and need to be manually stopped. This will be resolved in a later update.  
+
 ---
 
 ## Features
