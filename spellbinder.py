@@ -89,6 +89,7 @@ dynamic-pool {TAYGA4SUBNET}
     write_file("/etc/tayga.conf", config)
 
 def configure_radvd(dinterface, dip6):
+    base_prefix = dip6.split("::")[0] + "::"
     config = f"""interface {dinterface}
 {{
     AdvSendAdvert on;
@@ -96,7 +97,7 @@ def configure_radvd(dinterface, dip6):
     MaxRtrAdvInterval 10;
     AdvHomeAgentFlag off;
     AdvOtherConfigFlag on;
-    prefix {dip6}/{DIP6CIDR}
+    prefix {base_prefix}/{DIP6CIDR}
     {{
         AdvOnLink on;
         AdvAutonomous on;
